@@ -1,4 +1,5 @@
 import logging
+import time
 from serial import Serial
 
 kTimeout = 1
@@ -65,9 +66,44 @@ class UartDevice(IODevice):
         port: str = "/dev/ttyUSB0",
         baudrate: int = 9600,
         timeout: float = kTimeout,
+        isp_entry=False,
     ):
         _log.debug("connect serial")
-        self.uart = Serial(port, baudrate, xonxoff=False, timeout=timeout)
+        # Create the Serial object without port to avoid automatic opening
+        self.uart = Serial(port=None, baudrate=baudrate, xonxoff=False, timeout=timeout)
+
+        # Disable RTS and DRT to avoid automatic reset to ISP mode
+        self.uart.rts = 0
+        self.uart.dtr = 0
+
+        # Select and open the port after RTS and DTR are set to zero
+        self.uart.port = port
+        self.uart.open()
+
+        if isp_entry:
+            self.isp_mode()
+
+        self.flush()
+
+    # put the chip in isp mode by resetting it using RTS and DTR signals
+    # this is of course only possible if the signals are connected
+    def isp_mode(self):
+        self.set_reset_pin_level(0)
+        time.sleep(.1)
+        self.set_reset_pin_level(1)
+        self.set_isp_entry_pin_level(1)
+        time.sleep(.1)
+        self.set_reset_pin_level(0)
+        time.sleep(.1)
+        self.set_isp_entry_pin_level(0)
+
+    def set_reset_pin_level(self, level):
+        # reset pin is on dtr
+        self.uart.dtr = level
+
+    def set_isp_entry_pin_level(self, level):
+        # ISP entry pin is on rts
+        self.uart.rts = level
 
     def disconnect(self):
         _log.debug("disconnect serial")

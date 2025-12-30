@@ -32,6 +32,7 @@ _chip_defs = os.path.join(os.path.dirname(__file__), "lpctools_parts.def")
 @click.option("--config-file", "-f", default=_chip_defs, help="Parts definition file")
 @click.option("--echo", is_flag=True)
 @click.option("--no-sync", is_flag=True)
+@click.option("--isp-entry", is_flag=True, help="Use RTS and DTR to enter ISP mode")
 @click.option(
     "--sleep-time", "-s", type=float, default=0.25, help="Sleep time between commands"
 )
@@ -55,7 +56,7 @@ def gr1(ctx, **kwargs):
 @gr1.command("sync", help="Synchronize connection to chip")
 @click.pass_context
 def cli_sync(ctx):
-    iodevice = UartDevice(ctx.obj["device"], baudrate=ctx.obj["baud"])
+    iodevice = UartDevice(ctx.obj["device"], baudrate=ctx.obj["baud"], isp_entry=ctx.obj["isp_entry"])
     isp = ISPConnection(iodevice)
     isp.SyncConnection()
 
@@ -63,7 +64,7 @@ def cli_sync(ctx):
 @gr1.command("query-chip", help="Read chip Part ID, UID, and boot code version")
 @click.pass_context
 def cli_QueryChip(ctx):
-    iodevice = UartDevice(ctx.obj["device"], baudrate=ctx.obj["baud"])
+    iodevice = UartDevice(ctx.obj["device"], baudrate=ctx.obj["baud"], isp_entry=ctx.obj["isp_entry"])
     isp = ISPConnection(iodevice)
     boot_version = isp.ReadBootCodeVersion()
     uid = isp.ReadUID()
@@ -77,11 +78,12 @@ def cli_QueryChip(ctx):
 @click.pass_context
 def cli_MassErase(ctx):
     isp, chip = SetupChip(
-        ctx.obj["baud"],
-        ctx.obj["device"],
-        ctx.obj["crystal_frequency"],
-        ctx.obj["config_file"],
-        ctx.obj["no_sync"],
+        baudrate = ctx.obj["baud"],
+        device=ctx.obj["device"],
+        crystal_frequency=ctx.obj["crystal_frequency"],
+        chip_file=ctx.obj["config_file"],
+        no_sync=ctx.obj["no_sync"],
+        isp_entry=ctx.obj["isp_entry"],
     )
     MassErase(isp, chip)
     _log.info("Mass Erase Successful")
@@ -95,11 +97,12 @@ def cli_MassErase(ctx):
 @click.pass_context
 def cli_WriteFlash(ctx, imagein, start_sector):
     isp, chip = SetupChip(
-        ctx.obj["baud"],
-        ctx.obj["device"],
-        ctx.obj["crystal_frequency"],
-        ctx.obj["config_file"],
-        ctx.obj["no_sync"],
+        baudrate = ctx.obj["baud"],
+        device=ctx.obj["device"],
+        crystal_frequency=ctx.obj["crystal_frequency"],
+        chip_file=ctx.obj["config_file"],
+        no_sync=ctx.obj["no_sync"],
+        isp_entry=ctx.obj["isp_entry"],
     )
     image = read_image_file_to_bin(imagein)
     WriteBinaryToFlash(isp=isp, chip=chip, image=image, start_sector=start_sector)
@@ -112,11 +115,12 @@ def cli_WriteFlash(ctx, imagein, start_sector):
 @click.pass_context
 def cli_WriteImage(ctx, imagein):
     isp, chip = SetupChip(
-        ctx.obj["baud"],
-        ctx.obj["device"],
-        ctx.obj["crystal_frequency"],
-        ctx.obj["config_file"],
-        ctx.obj["no_sync"],
+        baudrate = ctx.obj["baud"],
+        device=ctx.obj["device"],
+        crystal_frequency=ctx.obj["crystal_frequency"],
+        chip_file=ctx.obj["config_file"],
+        no_sync=ctx.obj["no_sync"],
+        isp_entry=ctx.obj["isp_entry"],
     )
     image = read_image_file_to_bin(imagein)
     WriteImage(isp, chip, image)
@@ -130,11 +134,12 @@ def cli_WriteImage(ctx, imagein):
 @click.pass_context
 def cli_FastWriteImage(ctx, imagein):
     isp, chip = SetupChip(
-        ctx.obj["baud"],
-        ctx.obj["device"],
-        ctx.obj["crystal_frequency"],
-        ctx.obj["config_file"],
-        ctx.obj["no_sync"],
+        baudrate = ctx.obj["baud"],
+        device=ctx.obj["device"],
+        crystal_frequency=ctx.obj["crystal_frequency"],
+        chip_file=ctx.obj["config_file"],
+        no_sync=ctx.obj["no_sync"],
+        isp_entry=ctx.obj["isp_entry"],
     )
     image = read_image_file_to_bin(imagein)
     image_read = ReadImage(isp, chip)[: len(image)]
@@ -150,11 +155,12 @@ def cli_FastWriteImage(ctx, imagein):
 @click.pass_context
 def cli_ReadImage(ctx, imageout: str):
     isp, chip = SetupChip(
-        ctx.obj["baud"],
-        ctx.obj["device"],
-        ctx.obj["crystal_frequency"],
-        ctx.obj["config_file"],
-        ctx.obj["no_sync"],
+        baudrate = ctx.obj["baud"],
+        device=ctx.obj["device"],
+        crystal_frequency=ctx.obj["crystal_frequency"],
+        chip_file=ctx.obj["config_file"],
+        no_sync=ctx.obj["no_sync"],
+        isp_entry=ctx.obj["isp_entry"],
     )
     image = ReadImage(isp, chip)
     _log.debug(image)

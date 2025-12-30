@@ -912,6 +912,7 @@ def SetupChip(
     chip_file: str,
     no_sync: bool = False,
     settings: Union[Settings, None] = None,
+    isp_entry: bool = False,
 ):
     """
     :param int baudrate: The baudrate to set or use. If no_sync is True this baudrate is assumed to already be set
@@ -920,6 +921,7 @@ def SetupChip(
     :param str chip_file: Alternate file to find chip settings
     :param bool no_sync: Whether or not to synchronize the channel on start
     :param Settings settings: Time between serial commands
+    :param bool isp_entry: Whether to use RTS and DTR to control reset and ISP entry
     :return ISPConnection isp: an already opened link to an isp device
     :return ChipDescription chip: object describing the targets characteristics
 
@@ -936,7 +938,7 @@ def SetupChip(
             kStartingBaudRate = baudrate
 
         _log.debug("Using baud rate %d", kStartingBaudRate)
-        iodevice: UartDevice = UartDevice(device, baudrate=kStartingBaudRate)
+        iodevice: UartDevice = UartDevice(port=device, baudrate=kStartingBaudRate, isp_entry=isp_entry)
         isp = ISPConnection(iodevice, settings=settings)
         isp.reset()
         # print(baudrate, device, crystal_frequency, chip_file)
@@ -951,6 +953,7 @@ def SetupChip(
         time.sleep(isp.settings.set_baudrate_sleep)
         isp.reset()
         part_id = isp.ReadPartID()
+        _log.debug(f"Read Part ID: 0x{part_id:08X}")
 
         descriptor: dict[str, str] = get_part_descriptor(chip_file, part_id)
         _log.debug(f"{part_id}, {descriptor}")

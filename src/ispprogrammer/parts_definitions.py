@@ -79,7 +79,13 @@ def get_part_descriptor_line(fname: str, partid: int) -> LPCPart:
 
 
 def get_part_descriptor(fname: str, partid: int) -> Dict[str, Any]:
-    return get_part_descriptor_line(fname, partid).dict()
+    part = get_part_descriptor_line(fname, partid)
+    descriptor = part.dict()
+    # Add computed properties that ChipDescription expects
+    descriptor["RAMRange"] = list(part.RAMRange)
+    descriptor["FlashRange"] = list(part.FlashRange)
+    descriptor["RAMStartWrite"] = part.RAMStartWrite
+    return descriptor
 
 
 def check_parts_definition(parts: List[LPCPart]) -> bool:
