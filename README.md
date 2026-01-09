@@ -15,7 +15,7 @@ To prevent bricking the chip during an interrupted write:
 This ensures that any failure during programming will leave the chip in ISP mode.
 
 ### Auto ISP Mode Entry
-The `--isp_entry` option controls the UART RTS and DTR lines to automatically enter ISP mode. This option requires:
+The `--isp-entry` option controls the UART RTS and DTR lines to automatically enter ISP mode. This option requires:
 - DTR connects to chip /Reset pin
 - RTS connects to chip ISP_Entry pin
 
@@ -53,24 +53,23 @@ The configuration file is identical to that used by the [lpctools project](http:
 ### From PyPI
 
 ```bash
-pip install ispprogrammer
+pipx install ispprogrammer
 ```
-(Hint: use pipx on Ubuntu)
 
 ### From Source
 ```bash
 git clone https://github.com/snhobbs/isp-programmer.git
 cd isp-programmer
-pip install .
+pipx install . --force
 ```
 
 > Default chip definitions are bundled. For custom chips, use the --config-file flag or copy your lpctools_parts.def to /etc/lpctools_parts.def.
 
 
 ## Usage
-### Erase Entire Flash
+### Erase Entire Flash with Auto ISP Mode Entry
 ```bash
-ispprogrammer --device /dev/ttyUSB0 -b 9600 -crystal_frequency 12000 erase
+ispprogrammer --device /dev/ttyUSB0 --isp-entry erase
 ```
 
 ### Program Flash Image
